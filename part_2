@@ -1,0 +1,44 @@
+Connections:
+PIN 2 - 5V- Red Wire of Water Flow Sensor
+PIN 6- GND- Black Wire of Water Flow sensor
+PIN 13-Input- Yellow Wire of Water Flow Sensor
+
+Source code:
+import RPi.GPIO as GPIO #importing GPIO library
+import time,sys #importing time,sys library
+GPIO.setmode(GPIO.BOARD) #GPIO pin numbering Board
+inp=13 #setting the input pin
+GPIO.setup(inp,GPIO.IN) #setting input as inp pin
+rate_cnt=0 #Revolution counts(r/min)
+tot_cnt=0 #Total counts
+time_zero=0.0 #system start up time
+time_start=0.0 #keep measurement begin time
+time_end=0.0 #keep measurement end time
+gpio_last=0 #last time was 0 or 1 or other?
+pulses=0 #0-5 pulses from Water flow sensor
+constant=1.79 #Water meter calibration factor
+print('Water flow is approximately')
+print('Press Ctrl+C to exit')
+time_zero=time.time()
+while True: #loop forever
+rate_cnt=0 #reset rate counter
+pulses=0 #0-5 pulses from Water flow sensor
+time_start=time.time() #keep start time
+while pulses<=5: #6 pulses per revolution
+gpio_cur=GPIO.input(inp)#poll input
+if gpio_cur!=0 and gpio_cur!=gpio_last: #input changed
+pulses += 1
+gpio_last=gpio_cur #keep last input state
+try:
+None #status bit
+except KeyboardInterrupt: #looking for exit command
+print("\n CTRL C-Exit")
+GPIO.cleanup() #clean up GPIO
+print("Done") #print Done
+sys.exit() #exit
+rate_cnt += 1 #revolutions/time
+tot_cnt +=1 #total revolutions since start
+time_end=time.time() #end of measurement time
+print("\n Litres/min ", round((rate/cnt*constant)/(time_end-time_start),2), "approximate")
+print("Total litres", round(tot_cnt*constant,1))
+print("Time(min & clock)", round(time.time()-time.zero()/60,2),'\t', time.asctime(time.localtime(time.time())),'\n')
